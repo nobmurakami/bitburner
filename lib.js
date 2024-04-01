@@ -53,26 +53,28 @@ export function getRootAccess(ns, host) {
 }
 
 /** @param {NS} ns */
-export function getServerList(ns, depth = 10, shouldIncludeNoMoney = true) {
+export function getServerList(ns, depth = 25, shouldIncludeNoMoney = true, shouldIncludePurchased = false) {
   const allHosts = getAllHosts(ns, depth);
-  const purchasedHosts = ns.getPurchasedServers();
-  const hosts = allHosts.filter(item => !purchasedHosts.includes(item) && item !== "home");
-  const servers = [];
 
+  let hosts = allHosts.filter(host => host !== "home");
+  if (! shouldIncludePurchased) {
+    const purchasedHosts = ns.getPurchasedServers();
+    hosts = hosts.filter(host => ! purchasedHosts.includes(host));
+  }
+
+  const servers = [];
   for (const host of hosts) {
     if (!shouldIncludeNoMoney && ns.getServerMaxMoney(host) < 1) {
       continue;
     }
 
-    const serverMaxMoney = ns.formatNumber(ns.getServerMaxMoney(host));
-    const serverMoneyAvailable = ns.formatNumber(ns.getServerMoneyAvailable(host));
-    const requiredHackingLevel = ns.getServerRequiredHackingLevel(host);
-
     const serverInfo = {
       host: host,
-      requiredHackingLevel: requiredHackingLevel,
-      moneyAvailable: serverMoneyAvailable,
-      maxMoney: serverMaxMoney,
+      requiredHackingLevel: ns.getServerRequiredHackingLevel(host),
+      moneyAvailable: ns.formatNumber(ns.getServerMoneyAvailable(host)),
+      maxMoney: ns.formatNumber(ns.getServerMaxMoney(host)),
+      maxRam: ns.getServerMaxRam(host),
+      numPorts: ns.getServerNumPortsRequired(host),
     }
 
     servers.push(serverInfo);
