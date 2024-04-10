@@ -21,7 +21,7 @@ export function getAllHosts(ns, depth = 10) {
   return list;
 }
 
-/**
+/** 
  * @param {NS} ns
  * @param {string} host
  */
@@ -83,4 +83,34 @@ export function getServerList(ns, depth = 25, shouldIncludeNoMoney = true, shoul
   servers.sort((a, b) => a.requiredHackingLevel - b.requiredHackingLevel);
 
   return servers;
+}
+
+/** @param {NS} ns */
+export async function findPathToServer(ns, target, depth = 20) {
+  // 初期パンくずリスト
+  let breadcrumbs = [];
+
+  // サーバーを再帰的に検索し、パンくずリストを更新する関数
+  function scanServer(hostname, path, depth) {
+    if (hostname === target) {
+      breadcrumbs = path;
+      return true;
+    }
+    if (depth <= 0) {
+      return false;
+    }
+
+    for (const nextHostname of ns.scan(hostname)) {
+      if (!path.includes(nextHostname)) {
+        const found = scanServer(nextHostname, [...path, nextHostname], depth - 1);
+        if (found) return true;
+      }
+    }
+
+    return false;
+  }
+
+  scanServer("home", ["home"], depth);
+
+  return breadcrumbs;
 }
