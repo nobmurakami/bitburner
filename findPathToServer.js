@@ -6,3 +6,8 @@ export async function main(ns) {
   const path = await findPathToServer(ns, target);
   ns.tprint(path);
 }
+
+/** @param {AutocompleteData} data */
+export function autocomplete(data) {
+  return data.servers;
+}
